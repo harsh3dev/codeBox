@@ -1,0 +1,48 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.pdb
+*.log
+
+# Django
+*.sqlite3
+db.sqlite3
+
+# Virtual Environment
+venv/
+env/
+.venv/
+.env/
+
+# Python Packaging
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Static files (if collected in development)
+static/
+
+# Media files (if used)
+media/
+
+# Environment variables (to prevent .env files from being tracked)
+.env
+
+# Docker
+docker-compose.override.yml
+Dockerfile*
+.dockerignore
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Other
+*.bak
+*.tmp
+*.log
