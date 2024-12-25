@@ -33,7 +33,6 @@ media/
 
 # Docker
 docker-compose.override.yml
-Dockerfile*
 .dockerignore
 
 # IDEs and Editors
