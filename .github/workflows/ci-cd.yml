@@ -1,0 +1,206 @@
+name: CI/CD
+
+on:
+  merge_group:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  pre-commit:
+    name: Run pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: poetry
+          cache-dependency-path: backend/poetry.lock
+          python-version: '3.13'
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run npm format
+        working-directory: frontend
+        run: npm run format
+
+      - name: Run npm lint check
+        working-directory: frontend
+        run: npm run lint:check
+
+      - name: Check for uncommitted changes
+        run: |
+          git diff --exit-code || (echo 'Unstaged changes detected. \
+          Run `make check` and use `git add` to address it.' && exit 1)
+
+  code-ql:
+    name: CodeQL
+    needs:
+      - pre-commit
+
+      - name: Install dependencies for frontend
+        if: matrix.language == 'javascript-typescript'
+        working-directory: frontend
+        run: npm install
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'
+
+  run-backend-tests:
+    name: Run backend tests
+    needs:
+      - pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          cache: poetry
+          cache-dependency-path: backend/poetry.lock
+          python-version: '3.13'
+
+      - name: Run backend tests
+        run: |
+          make test-backend
+
+  run-frontend-tests:
+    name: Run frontend tests
+    needs:
+      - pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run frontend tests
+        run: |
+          make test-frontend
+
+  build-docker-staging-images:
+    name: Build Docker Staging Images
+    environment: staging
+    if: |
+      github.ref == 'refs/heads/main'
+    needs:
+      - code-ql
+      - run-backend-tests
+      - run-frontend-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile.staging
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/owasp-nest-backend:latest
+
+      - name: Prepare frontend environment
+        run: |
+          echo "VITE_ALGOLIA_APP_ID=${{ secrets.ALGOLIA_APP_ID }}" > frontend/.env.staging
+          echo "VITE_ALGOLIA_SEARCH_KEY=${{ secrets.ALGOLIA_SEARCH_API_KEY }}" >> frontend/.env.staging
+          echo "VITE_NEST_API_URL=https://nest.owasp.dev/api/v1" >> frontend/.env.staging
+          echo "VITE_NEST_SENTRY_DSN_URL=${{ secrets.SENTRY_DSN }}" >> frontend/.env.staging
+          echo "VITE_NEST_ENV=staging" >> frontend/.env.staging
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          file: frontend/Dockerfile.staging
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/owasp-nest-frontend:latest
+
+  deploy-nest-staging:
+    name: Deploy Nest Staging
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: False
+      STAGING_HOST_IP_ADDRESS: '${{ secrets.STAGING_HOST_IP_ADDRESS }}'
+      STAGING_SSH_PRIVATE_KEY_PATH: '~/.ssh/nest_staging_private_key'
+    environment: staging
+    if: |
+      github.ref == 'refs/heads/main'
+    needs:
+      - build-docker-staging-images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH key
+        run: |
+          mkdir -m 700 ~/.ssh
+          echo "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" > ${{ env.STAGING_SSH_PRIVATE_KEY_PATH }}
+          chmod 400 ${{ env.STAGING_SSH_PRIVATE_KEY_PATH }}
+
+      - name: Run Nest deploy
+        working-directory: .github/ansible
+        run: ansible-playbook -i inventory.yaml staging/deploy.yaml -e "github_workspace=$GITHUB_WORKSPACE"
