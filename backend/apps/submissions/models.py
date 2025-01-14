@@ -1,7 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
-class Solution(models.Model):
+class Submission(models.Model):
     LANGUAGE_CHOICES = [
         ('PY', 'Python'),
         ('JS', 'JavaScript'),
@@ -18,8 +18,8 @@ class Solution(models.Model):
         ('CE', 'Compilation Error')
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    problem = models.ForeignKey('coding_platform.Problem', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    problem = models.ForeignKey('problems.Problem', on_delete=models.CASCADE)
     code = models.TextField()
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES)
     status = models.CharField(max_length=3, choices=STATUS_CHOICES)

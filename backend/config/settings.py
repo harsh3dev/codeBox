@@ -37,6 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.problems',
+    'apps.submissions',
+    'apps.discussions',
+    'apps.tags',
+    'apps.user',
+    'pytest_django',
+    'markdownx',
 ]
 
 MIDDLEWARE = [
@@ -75,10 +82,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'your_db_name',
+        'USER': 'your_username',
+        'PASSWORD': 'your_password',
+        'HOST': 'db',  
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
@@ -111,6 +123,8 @@ USE_I18N = True
 
 USE_TZ = True
 
+
+AUTH_USER_MODEL = 'user.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

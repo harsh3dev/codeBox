@@ -11,6 +11,42 @@ services:
     depends_on:
       - db
 
+  coderunner_java:
+    build: 
+      context: ./docker/coderunner/java
+    container_name: coderunner_java
+    volumes:
+      - ./tmp:/code
+    security_opt:
+      - no-new-privileges
+    memory: 512M
+    cpu_quota: 50000
+    read_only: true
+
+  coderunner_python:
+    build: 
+      context: ./docker/coderunner/python
+    container_name: coderunner_python
+    volumes:
+      - ./tmp:/code
+    security_opt:
+      - no-new-privileges
+    memory: 512M
+    cpu_quota: 50000
+    read_only: true
+
+  coderunner_cpp:
+    build: 
+      context: ./docker/coderunner/cpp
+    container_name: coderunner_cpp
+    volumes:
+      - ./tmp:/code
+    security_opt:
+      - no-new-privileges
+    memory: 512M
+    cpu_quota: 50000
+    read_only: true
+
   frontend:
     build:
       context: ./frontend
