@@ -1,4 +1,4 @@
-version: "3.8"
+
 services:
   backend:
     build:
@@ -7,50 +7,50 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app  
+      - ./backend:/app
     depends_on:
       - db
 
   coderunner_java:
-    build: 
-      context: ./docker/coderunner/java
+    build:
+      context: ./backend/docker/java
     container_name: coderunner_java
     volumes:
       - ./tmp:/code
     security_opt:
       - no-new-privileges
-    memory: 512M
+    mem_limit: 512m
     cpu_quota: 50000
     read_only: true
 
   coderunner_python:
-    build: 
-      context: ./docker/coderunner/python
+    build:
+      context: ./backend/docker/python
     container_name: coderunner_python
     volumes:
       - ./tmp:/code
     security_opt:
       - no-new-privileges
-    memory: 512M
+    mem_limit: 512m
     cpu_quota: 50000
     read_only: true
 
   coderunner_cpp:
-    build: 
-      context: ./docker/coderunner/cpp
+    build:
+      context: ./backend/docker/cpp
     container_name: coderunner_cpp
     volumes:
       - ./tmp:/code
     security_opt:
       - no-new-privileges
-    memory: 512M
+    mem_limit: 512m
     cpu_quota: 50000
     read_only: true
 
   frontend:
     build:
       context: ./frontend
-    command: npm run dev -- --host  
+    command: npm run dev -- --host
     ports:
       - "3000:3000"
     volumes:
@@ -68,7 +68,7 @@ services:
       POSTGRES_USER: your_db_user
       POSTGRES_PASSWORD: your_db_password
     volumes:
-      - pgdata:/var/lib/postgresql/data  
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
   pgdata:

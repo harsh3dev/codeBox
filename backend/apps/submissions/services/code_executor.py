@@ -2,14 +2,14 @@ import os
 import subprocess
 import tempfile
 import shutil
-from django.conf import settings
+
 
 class CodeExecutor:
     def __init__(self, submission, test_cases):
         self.submission = submission
         self.test_cases = test_cases
         self.temp_dir = tempfile.mkdtemp()
-
+        
     def execute(self):
         language_handlers = {
             'java': self._handle_java,

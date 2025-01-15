@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 
-class Submission(models.Model):
+class CodeSubmission(models.Model):
     LANGUAGE_CHOICES = [
         ('PY', 'Python'),
         ('JS', 'JavaScript'),
