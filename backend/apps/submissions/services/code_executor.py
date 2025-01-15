@@ -32,6 +32,7 @@ class CodeExecutor:
 
     def _handle_java(self):
         file_path = os.path.join(self.temp_dir, 'Main.java')
+        print(f"flie path :",file_path)
         with open(file_path, 'w') as f:
             f.write(self.submission.code)
         

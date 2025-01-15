@@ -1,4 +1,6 @@
 
+version: '3.8'
+
 services:
   backend:
     build:
@@ -11,6 +13,18 @@ services:
     depends_on:
       - db
 
+  coderunner_cpp:
+    build:
+      context: ./backend/docker/cpp
+    container_name: coderunner_cpp
+    volumes:
+      - ./tmp:/code
+    security_opt:
+      - no-new-privileges
+    mem_limit: 512m
+    cpu_quota: 50000
+    read_only: true
+
   coderunner_java:
     build:
       context: ./backend/docker/java
@@ -22,23 +36,12 @@ services:
     mem_limit: 512m
     cpu_quota: 50000
     read_only: true
+    command: java -cp /code Main   
 
   coderunner_python:
     build:
       context: ./backend/docker/python
     container_name: coderunner_python
-    volumes:
-      - ./tmp:/code
-    security_opt:
-      - no-new-privileges
-    mem_limit: 512m
-    cpu_quota: 50000
-    read_only: true
-
-  coderunner_cpp:
-    build:
-      context: ./backend/docker/cpp
-    container_name: coderunner_cpp
     volumes:
       - ./tmp:/code
     security_opt:
