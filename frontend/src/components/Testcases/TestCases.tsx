@@ -8,7 +8,7 @@ export default function TestCases() {
 
   return (
     <div className="h-full min-h-[20px] p-4 rounded-lg">
-      <Tabs
+      {/* <Tabs
         value={visibleTabs.find(tab => tab.isActive)?.id || visibleTabs[0]?.id}
         onValueChange={activateTab}
         className="flex-1 w-full h-full"
@@ -36,7 +36,7 @@ export default function TestCases() {
             {tab.content}
           </TabsContent>
         ))}
-      </Tabs>
+      </Tabs> */}
     </div>
   );
 }
