@@ -1,11 +1,8 @@
 from django.db import models
-from django.conf import settings
 
 class CodeSubmission(models.Model):
     LANGUAGE_CHOICES = [
         ('PY', 'Python'),
-        ('JS', 'JavaScript'),
-        ('JAVA', 'Java'),
         ('CPP', 'C++'),
     ]
 
@@ -18,16 +15,14 @@ class CodeSubmission(models.Model):
         ('CE', 'Compilation Error')
     ]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    problem = models.ForeignKey('problems.Problem', on_delete=models.CASCADE)
     code = models.TextField()
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES)
-    status = models.CharField(max_length=3, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='CE')  
     execution_time = models.IntegerField(null=True)
     memory_used = models.IntegerField(null=True)
-    submitted_at = models.DateTimeField(auto_now_add=True)
+    test_cases = models.JSONField()
 
     class Meta:
         indexes = [
-            models.Index(fields=['user', 'problem', 'submitted_at'])
+            models.Index(fields=['status'])
         ]

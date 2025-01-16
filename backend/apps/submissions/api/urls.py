@@ -6,5 +6,5 @@ router = DefaultRouter()
 router.register(r'submissions', CodeSubmissionViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),  
+    path('', include(router.urls)),  # This will automatically register the "submit" action as well
 ]
