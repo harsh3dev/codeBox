@@ -60,10 +60,12 @@ INSTALLED_APPS = [
     'apps.problems',
     'apps.submissions',
     'apps.discussions',
+    'apps.interview',
     'apps.tags',
     'apps.user',
     'pytest_django',
     'markdownx',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -96,7 +98,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
+ASGI_APPLICATION = 'config.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
