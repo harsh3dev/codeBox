@@ -15,7 +15,6 @@ from apps.interview.routing import websocket_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-# Wrap the default ASGI application with ProtocolTypeRouter
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),  
     "websocket": AuthMiddlewareStack(  
