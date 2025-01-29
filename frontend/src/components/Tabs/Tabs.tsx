@@ -12,7 +12,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+      "flex flex-col h-full items-start justify-start rounded-md bg-muted p-1 text-muted-foreground",
       className
     )}
     {...props}
@@ -31,8 +31,8 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-      "group", // Add this class for hover effects
+      "inline-flex items-center justify-start whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+      "group",
       className
     )}
     {...props}
@@ -41,12 +41,12 @@ const TabsTrigger = React.forwardRef<
     {children}
     {isClosable && (
       <X
-        className="ml-2 h-4 w-4 hover:bg-gray-400/20 dark:hover:bg-gray-200/30 rounded-full p-[2px]"
-        onClick={(e) => {
-          e.stopPropagation()
-          onClose?.()
-        }}
-      />
+      className="absolute -top-2 -right-2 invisible group-hover:visible h-4 w-4 text-red-500 rounded-full p-[2px] bg-red-200"
+      onClick={(e) => {
+        e.stopPropagation()
+        onClose?.()
+      }}
+    />
     )}
   </TabsPrimitive.Trigger>
 ))
@@ -59,7 +59,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "flex-1 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       className
     )}
     {...props}
