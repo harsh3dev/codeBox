@@ -1,145 +1,232 @@
 import os
-import subprocess
-import tempfile
-import shutil
+import logging
+import asyncio
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class CodeExecutor:
-    def __init__(self, submission, test_cases):
+    def __init__(self, submission, test_cases, timeout=5.0):
         self.submission = submission
         self.test_cases = test_cases
-        self.temp_dir = tempfile.mkdtemp()
-        
-    def execute(self):
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.timeout = timeout
+        self.thread_pool = ThreadPoolExecutor(max_workers=4)
+        self._container_pool = set()
+
+    async def execute(self):
+        try:
+            handler = self._get_language_handler()
+            if not handler:
+                return self._create_error_response(f'{self.submission.language} not supported')
+
+            return await handler()
+
+        except Exception as e:
+            logger.error(f"Execution Error: {e}")
+            return self._create_error_response(f'Execution Error: {str(e)}')
+
+    @lru_cache(maxsize=32)
+    def _get_language_handler(self):
         language_handlers = {
-            'java': self._handle_java,
-            'python': self._handle_python,
+            'py': self._handle_python,
             'cpp': self._handle_cpp
         }
-        
-        handler = language_handlers.get(self.submission.language.lower())
-        if not handler:
-            return {
-                'message': f'{self.submission.language} not supported',
-                'error': True,
-                'success': False,
-                'output_value': '',
-                'input': '',
-                'expected_output': ''
-            }
-        
-        return handler()
+        return language_handlers.get(self.submission.language.lower())
 
-    def _handle_java(self):
-        file_path = os.path.join(self.temp_dir, 'Main.java')
-        with open(file_path, 'w') as f:
-            f.write(self.submission.code)
-        
-        compile_result = subprocess.run([
-            'docker', 'run', '--rm',
-            '-v', f'{self.temp_dir}:/code',
-            'openjdk:latest',  
-            'javac', 'Main.java'
-        ], capture_output=True, text=True)
-        
-        if compile_result.returncode != 0:
-            return {
-                'message': f'Compilation Error: {compile_result.stderr}',
-                'error': True,
-                'success': False,
-                'output_value': '',
-                'input': '',
-                'expected_output': ''
-            }
-        
-        return self._run_tests('java')
+    async def _handle_python(self):
+        container_name = f'coderunner_python_{uuid.uuid4().hex}'
 
-    def _handle_python(self):
-        file_path = os.path.join(self.temp_dir, 'main.py')
-        with open(file_path, 'w') as f:
-            f.write(self.submission.code)
-        
-        return self._run_tests('python')
+        try:
+            source_file = os.path.join(self.base_dir, 'python', 'main.py')
+            await self._write_file_async(source_file, self.submission.code)
 
-    def _handle_cpp(self):
-        file_path = os.path.join(self.temp_dir, 'main.cpp')
-        with open(file_path, 'w') as f:
-            f.write(self.submission.code)
-        
-        compile_result = subprocess.run([
-            'docker', 'run', '--rm',
-            '-v', f'{self.temp_dir}:/code',
-            'gcc:latest',  
-            'g++', 'main.cpp', '-o', 'main'
-        ], capture_output=True, text=True)
-        
-        if compile_result.returncode != 0:
-            return {
-                'message': f'Compilation Error: {compile_result.stderr}',
-                'error': True,
-                'success': False,
-                'output_value': '',
-                'input': '',
-                'expected_output': ''
-            }
-        
-        return self._run_tests('cpp')
+            create_command = [
+                'docker', 'run',
+                '-d',
+                '--memory=128m',
+                '--cpus=0.5',
+                '--network=none',
+                '--name', container_name,
+                'coderunner_python:latest'
+            ]
+            await self._run_command(create_command)
 
-    def _run_tests(self, language):
-        docker_commands = {
-            'java': ['java', 'Main'],
-            'python': ['python3', 'main.py'],
-            'cpp': ['./main']
-        }
+            copy_command = [
+                'docker', 'cp',
+                source_file,
+                f'{container_name}:/code/main.py'
+            ]
+            await self._run_command(copy_command)
 
-        all_tests_passed = True
+            results = await self._run_all_tests(container_name)
+
+            await self._cleanup_container(container_name)
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Error in Python handling: {e}")
+            return self._create_error_response(f'Error: {str(e)}')
+
+    async def _handle_cpp(self):
+        container_name = f'coderunner_cpp_{uuid.uuid4().hex}'
+
+        try:
+            source_file = os.path.join(self.base_dir, 'cpp', 'main.cpp')
+            await self._write_file_async(source_file, self.submission.code)
+
+            create_command = [
+                'docker', 'run',
+                '-d',
+                '--memory=128m',
+                '--cpus=0.5',
+                '--network=none',
+                '--name', container_name,
+                'coderunner_cpp:latest'
+            ]
+            await self._run_command(create_command)
+
+            copy_command = [
+                'docker', 'cp',
+                source_file,
+                f'{container_name}:/code/main.cpp'
+            ]
+            await self._run_command(copy_command)
+
+            compile_result = await self._compile_cpp(container_name)
+            if compile_result['error']:
+                return compile_result
+
+            results = await self._run_all_tests(container_name)
+
+            await self._cleanup_container(container_name)
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Error in C++ handling: {e}")
+            return self._create_error_response(f'Error: {str(e)}')
+
+    async def _write_file_async(self, filepath, content):
+        def write_file():
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            with open(filepath, 'w') as f:
+                f.write(content)
+        await asyncio.get_event_loop().run_in_executor(self.thread_pool, write_file)
+
+    async def _run_command(self, command):
+        process = await asyncio.create_subprocess_exec(
+            *command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        await process.communicate()
+
+    async def _compile_cpp(self, container_name):
+        compile_command = [
+            'docker', 'exec',
+            container_name,
+            'g++', '/code/main.cpp', '-o', '/code/main',
+            '-O2'
+        ]
+        process = await asyncio.create_subprocess_exec(
+            *compile_command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        _, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            return self._create_error_response(f'Compilation Error: {stderr.decode()}')
+        return {'error': False}
+
+    async def _run_all_tests(self, container_name):
         results = []
-
         for test_case in self.test_cases:
-            input_path = os.path.join(self.temp_dir, 'input.txt')
-            with open(input_path, 'w') as f:
-                f.write(test_case.input.replace('\r', ''))
-            
-            cmd = docker_commands[language]
-            process = subprocess.run([
-                'docker', 'run', '--rm', '-i',
-                '-v', f'{self.temp_dir}:/code',
-                f'coderunner_{language}',
-                *cmd
-            ], input=test_case.input.encode(), capture_output=True, text=True)
-            
-            output = process.stdout.strip()
-            expected = test_case.expected_output.strip()
-
-            if output != expected:
-                all_tests_passed = False
+            if not isinstance(test_case, dict):
                 results.append({
-                    'input': test_case.input,
-                    'output_value': output,
-                    'expected_output': expected,
-                    'error': True
+                    'test_case': test_case,
+                    'output': '',
+                    'success': False,
+                    'error': True,
+                    'message': 'Invalid test case format',
+                    'expected': ''
                 })
+                continue
+
+            input_data = test_case.get('input', '').replace('\r', '')
+            expected_output = test_case.get('expected_test_cases', '').replace('\r', '')
+
+            run_command = ['docker', 'exec', '-i', container_name]
+            if self.submission.language.lower() == 'cpp':
+                run_command.append('/code/main')
             else:
-                results.append({
-                    'input': test_case.input,
-                    'output_value': output,
-                    'expected_output': expected,
-                    'error': False
-                })
-        
-        shutil.rmtree(self.temp_dir)
+                run_command.extend(['python3', '/code/main.py'])
 
-        if all_tests_passed:
-            return {
-                'message': 'All Test Cases Passed',
-                'error': False,
-                'success': True,
-                'results': results
-            }
-        else:
-            return {
-                'message': 'Test Cases Failed',
-                'error': True,
-                'success': False,
-                'results': results
-            }
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    *run_command,
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(input=input_data.encode()),
+                    timeout=self.timeout
+                )
+
+                output = stdout.decode().strip()
+                error = output.strip() != expected_output.strip()
+
+                results.append({
+                    'test_case': test_case,
+                    'output': output,
+                    'success': not error,
+                    'error': error,
+                    'expected': expected_output
+                })
+
+            except asyncio.TimeoutError:
+                results.append({
+                    'test_case': test_case,
+                    'output': '',
+                    'success': False,
+                    'error': True,
+                    'message': 'Timeout Error',
+                    'expected': expected_output
+                })
+            except Exception as e:
+                results.append({
+                    'test_case': test_case,
+                    'output': '',
+                    'success': False,
+                    'error': True,
+                    'message': f'Execution Error: {str(e)}',
+                    'expected': expected_output
+                })
+
+        return results
+
+    async def _cleanup_container(self, container_name):
+        try:
+            await asyncio.create_subprocess_exec(
+                'docker', 'rm', '-f', container_name,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL
+            )
+        except Exception as e:
+            logger.error(f"Error removing container: {str(e)}")
+
+    def _create_error_response(self, message):
+        return {
+            'message': message,
+            'error': True,
+            'success': False,
+            'output_value': '',
+            'input': '',
+            'expected_output': ''
+        }

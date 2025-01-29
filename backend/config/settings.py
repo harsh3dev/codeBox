@@ -37,7 +37,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.AllowAny",
     ],
 }
 
@@ -55,16 +55,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "api",
     "rest_framework",
     "corsheaders",
     'apps.problems',
     'apps.submissions',
     'apps.discussions',
+    'apps.interview',
     'apps.tags',
     'apps.user',
     'pytest_django',
     'markdownx',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -97,7 +98,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
+ASGI_APPLICATION = 'config.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
