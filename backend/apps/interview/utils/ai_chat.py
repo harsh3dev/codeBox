@@ -6,7 +6,7 @@ from langchain_core.prompts import (
 )
 from langchain_core.messages import SystemMessage
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
-from langchain.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from prompt import base_interviewer, dsa_prompt
 
 def generate_ai_message(
@@ -32,25 +32,22 @@ def generate_ai_message(
     conversational_memory_length = 5 
     memory = ConversationBufferWindowMemory(k=conversational_memory_length, memory_key="chat_history", return_messages=True)
 
-    # Use GPT-4o model for language generation
-    llm = ChatOpenAI(
-        model="gpt-4o",
-        temperature=0.7,  
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.0-flash-exp",
+        temperature=0,
         max_tokens=None,
         timeout=None,
         max_retries=2,
     )
 
-    # Construct chat prompt template using components
     prompt = ChatPromptTemplate.from_messages(
         [
-            SystemMessage(content=formatted_dsa_prompt),  # Use the dynamic problem description prompt
-            MessagesPlaceholder(variable_name="chat_history"),  # Placeholder for chat history
-            HumanMessagePromptTemplate.from_template("{human_input}"),  # User input
+            SystemMessage(content=formatted_dsa_prompt),
+            MessagesPlaceholder(variable_name="chat_history"),
+            HumanMessagePromptTemplate.from_template("{human_input}"),
         ]
     )
 
-    # Create conversation chain
     conversation = LLMChain(
         llm=llm,
         prompt=prompt,
@@ -58,10 +55,8 @@ def generate_ai_message(
         memory=memory,
     )
 
-    # Generate the response
     response = conversation.predict(human_input=final_prompt)
     
-    # Optionally, parse #NOTES# from the response (if your logic requires this)
     if "#NOTES#" in response:
         visible_message, ai_notes = response.split("#NOTES#", 1)
     else:

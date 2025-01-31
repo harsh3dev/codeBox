@@ -18,7 +18,7 @@ type problemSet = {
   initialDislikes: number;
 }
 
-export default function Discussion() {
+export default function Description() {
   // const { state, dispatch } = useEditorMode();
   const [problem, setProblem] = useState<problemSet | null>(null);
 
