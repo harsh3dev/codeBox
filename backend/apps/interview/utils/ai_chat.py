@@ -7,7 +7,7 @@ from langchain_core.prompts import (
 from langchain_core.messages import SystemMessage
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
-from prompt import base_interviewer, dsa_prompt
+from .prompt import base_interviewer, dsa_prompt
 
 def generate_ai_message(
     username=None, 

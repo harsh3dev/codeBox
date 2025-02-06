@@ -4,11 +4,13 @@ from asgiref.sync import sync_to_async
 from .models import InterviewSession
 from apps.problems.models import Problem
 from .utils.ai_chat import generate_ai_message  
-
+import logging
+logger = logging.getLogger(__name__)
 class InterviewConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.interview_id = self.scope['url_route']['kwargs']['interview_id']
-        try:
+        try: 
+            logger.info(f"connecting to interview {self.interview_id}")
             self.interview = await sync_to_async(InterviewSession.objects.get)(id=self.interview_id)
             self.question = await sync_to_async(self.interview.question)()  
             self.chat_history = ""  
@@ -24,6 +26,7 @@ class InterviewConsumer(AsyncWebsocketConsumer):
             # Send the first welcome message and question
             await self.send_initial_message()
         except InterviewSession.DoesNotExist:
+            logger.error(f"Interview {self.interview_id} not found.")
             await self.close()
 
     async def disconnect(self, close_code):
