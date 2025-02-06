@@ -1,5 +1,4 @@
 import { ReactNode } from 'react'
-import { type LucideIcon } from 'lucide-react'
 
 export interface Tab {
   id: string
@@ -8,7 +7,7 @@ export interface Tab {
   isActive: boolean
   isClosable: boolean
   content: ReactNode
-  icon?: LucideIcon
+  icon?: ReactNode
 }
 
 export interface TabsState {
