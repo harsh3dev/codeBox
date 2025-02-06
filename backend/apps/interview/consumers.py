@@ -10,7 +10,7 @@ class InterviewConsumer(AsyncWebsocketConsumer):
         self.interview_id = self.scope['url_route']['kwargs']['interview_id']
         try:
             self.interview = await sync_to_async(InterviewSession.objects.get)(id=self.interview_id)
-            self.question = await sync_to_async(self.interview.questions.first)()  
+            self.question = await sync_to_async(self.interview.question)()  
             self.chat_history = ""  
             self.ai_notes = ""  
             self.initial_prompt_sent = False  
@@ -30,14 +30,9 @@ class InterviewConsumer(AsyncWebsocketConsumer):
         print(f"WebSocket connection closed with code {close_code}.")
 
     async def send_initial_message(self):
-        # Retrieve stored user information and question description from the session state
         username = self.scope['username']
-        question_description = self.scope['question_description']
-        
-        # Send the welcome message along with the question
         welcome_message = f"Welcome to the interview, {username}. " \
                           f"The question is: '{self.question.title}'. Can you explain your approach?"
-        
         await self.send(text_data=json.dumps({
             'type': 'ai_message',
             'message': welcome_message,
@@ -49,10 +44,7 @@ class InterviewConsumer(AsyncWebsocketConsumer):
             if 'answer' in data:
                 candidate_response = data['answer']
                 print(f"Candidate's response: {candidate_response}")
-
-                # Update the chat history for LangChain
                 self.chat_history += f"\nCandidate: {candidate_response}"
-
                 # Handle first message to AI with username and question description
                 if not self.initial_prompt_sent:
                     username = self.scope['username']

@@ -21,18 +21,15 @@ def generate_ai_message(
             Candidate_name=username,
             Problem_description=question_description
         )
-
-        formatted_base_prompt = base_interviewer.replace("<You message here>", f"You are conducting an interview with {username}.")
-        final_prompt = formatted_base_prompt + "\n" + formatted_dsa_prompt + "\n" + chat_history if chat_history else formatted_base_prompt + "\n" + formatted_dsa_prompt
+        formatted_base_prompt = base_interviewer
+        final_prompt = formatted_base_prompt + "\n" + formatted_dsa_prompt + "\n" + chat_history if chat_history else ""
     else:
         base_prompt = "You are continuing an interview. Refer to the conversation so far and AI notes:"
         final_prompt = f"{base_prompt}\nChat History:\n{chat_history}\nAI Notes:\n{ai_notes}"
 
-    # Set up the memory for conversation
     conversational_memory_length = 5 
     memory = ConversationBufferWindowMemory(k=conversational_memory_length, memory_key="chat_history", return_messages=True)
 
-    # Use GPT-4o model for language generation
     llm = ChatOpenAI(
         model="gpt-4o",
         temperature=0.7,  
@@ -44,9 +41,9 @@ def generate_ai_message(
     # Construct chat prompt template using components
     prompt = ChatPromptTemplate.from_messages(
         [
-            SystemMessage(content=formatted_dsa_prompt),  # Use the dynamic problem description prompt
-            MessagesPlaceholder(variable_name="chat_history"),  # Placeholder for chat history
-            HumanMessagePromptTemplate.from_template("{human_input}"),  # User input
+            SystemMessage(content=formatted_dsa_prompt),  
+            MessagesPlaceholder(variable_name="chat_history"),  
+            HumanMessagePromptTemplate.from_template("{human_input}"),  
         ]
     )
 
