@@ -6,7 +6,7 @@ from langchain_core.prompts import (
 from langchain_core.messages import SystemMessage
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
-from prompt import code_review, time_complexity, error_assistance
+from .prompt import code_review, time_complexity, error_assistance
 
 
 def get_prompt(
