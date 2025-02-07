@@ -8,7 +8,8 @@ from .models import InterviewSession
 from .serializers import QuestionSerializer  
 from .serializers import CodeSerializer
 from .utils.execute_ai_tool import execute_ai_tool
-
+import logging
+logger = logging.getLogger(__name__)
 class QuestionList(APIView):
     def get(self, request):
         questions = Problem.objects.all()
@@ -17,21 +18,20 @@ class QuestionList(APIView):
 
 class StartInterview(APIView):
     def post(self, request):
-        user = request.user
+        id = request.data.get('id')
         question_id = request.data.get('question_id')
-
-        if not question_id:
-            return Response({"error": "No question selected."}, status=status.HTTP_400_BAD_REQUEST)
+        user=User.objects.get(id=id)
+        if not user:
+            return Response({"error": "User is not signup."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Fetch the question
-        question = Problem.objects.filter(id=question_id)
-
+        question = Problem.objects.get(id=question_id)
+        logger.info(f"Question: {question}")
         if not question:
             return Response({"error": "Invalid question selected."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create a new interview session
-        interview = InterviewSession.objects.create(user=user)
-        interview.question.add(question)  # Add the single question to the interview session
+        interview = InterviewSession.objects.create(user=user,question=question)
         interview.save()
 
         return Response({"message": "Interview started!", "interview_id": interview.id}, status=status.HTTP_201_CREATED)

@@ -9,6 +9,7 @@ class Problem(models.Model):
         ('H', 'Hard')
     ]
 
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200, unique=True)
     description = MarkdownxField(help_text="Problem description in Markdown format")
     input_format = MarkdownxField(help_text="Input format specification")
