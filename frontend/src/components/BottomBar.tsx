@@ -18,7 +18,7 @@ export function BottomBar({
   onVote
 }: BottomBarProps) {
   return (
-    <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t py-4 px-2 -mx-4 shadow-md">
+    <div className="w-full px-2">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
