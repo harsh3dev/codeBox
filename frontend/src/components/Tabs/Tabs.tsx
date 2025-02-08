@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 import { cn } from "@/lib/utils"
-import { X } from 'lucide-react'
+import { Minus, X } from 'lucide-react'
 
 const Tabs = TabsPrimitive.Root
 
@@ -40,8 +40,8 @@ const TabsTrigger = React.forwardRef<
     {icon && <span className="mr-2">{icon}</span>}
     {children}
     {isClosable && (
-      <X
-      className="absolute -top-2 -right-2 invisible group-hover:visible h-4 w-4 text-red-500 rounded-full p-[2px] bg-red-200"
+      <Minus
+      className="absolute -top-2 -right-2 invisible group-hover:visible h-4 w-4 text-red-800 rounded-full p-[2px] bg-red-100/80"
       onClick={(e) => {
         e.stopPropagation()
         onClose?.()
