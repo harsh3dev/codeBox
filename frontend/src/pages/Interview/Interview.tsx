@@ -17,7 +17,7 @@ export default function Interview() {
           </ResizablePanel>
           <ResizableHandle withHandle className="bg-background px-[1px] mx-[2px] hover:bg-blue-700 transition-colors" />
           <ResizablePanel minSize={20} defaultSize={50}>
-            <RightPanel />
+            <RightPanel interview_id={id as string} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
