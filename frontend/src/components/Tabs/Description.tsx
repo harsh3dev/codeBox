@@ -29,57 +29,13 @@ export default function Description() {
       "labels": ["Array", "Hash Table", "Bit Manipulation"],
       "timeLimit": "1s",
       "memoryLimit": "256MB",
-      "description": `You are given two 0-indexed integer permutations \`A\` and \`B\` of length \`n\`.
-
-A **prefix common array** of \`A\` and \`B\` is an array \`C\` such that \`C[i]\` is equal to the count of numbers that are present at or before the index \`i\` in both \`A\` and \`B\`.
-
-Return the prefix common array of \`A\` and \`B\`.
-
-A sequence of \`n\` integers is called a **permutation** if it contains all integers from \`1\` to \`n\` exactly once.
-
----
-
-### Example 1:
-
-**Input:**  
-\`A = [1,3,2,4]\`  
-\`B = [3,1,2,4]\`  
-
-**Output:**  
-\`[0,2,3,4]\`  
-
-**Explanation:**  
-- At \`i = 0\`: No number is common, so \`C[0] = 0\`.  
-- At \`i = 1\`: \`1\` and \`3\` are common in \`A\` and \`B\`, so \`C[1] = 2\`.  
-- At \`i = 2\`: \`1\`, \`2\`, and \`3\` are common in \`A\` and \`B\`, so \`C[2] = 3\`.  
-- At \`i = 3\`: \`1\`, \`2\`, \`3\`, and \`4\` are common in \`A\` and \`B\`, so \`C[3] = 4\`.
-
----
-
-### Example 2:
-
-**Input:**  
-\`A = [2,3,1]\`  
-\`B = [3,1,2]\`  
-
-**Output:**  
-\`[0,1,3]\`  
-
-**Explanation:**  
-- At \`i = 0\`: No number is common, so \`C[0] = 0\`.  
-- At \`i = 1\`: Only \`3\` is common in \`A\` and \`B\`, so \`C[1] = 1\`.  
-- At \`i = 2\`: \`1\`, \`2\`, and \`3\` are common in \`A\` and \`B\`, so \`C[2] = 3\`.
-
----
-
-### Constraints:
-
-- \`1 <= A.length == B.length == n <= 50\`  
-- \`1 <= A[i], B[i] <= n\`  
-- It is guaranteed that \`A\` and \`B\` are both permutations of \`n\` integers.
-`,
+      "description": `You are given two strings \`s1\` and \`s2\` of equal length. A **string swap** is an operation where you choose two indices in a string (not necessarily different) and swap the characters at these indices.\n\nReturn \`true\` if it is possible to make both strings equal by performing **at most one string swap** on exactly **one** of the strings. Otherwise, return \`false\`.\n\n---\n\n### Example 1:\n\n **Input:**\n\n \`s1 = "bank", s2 = "kanb"\`\n\n **Output:**\n\n \`true\`\n\n **Explanation:**\n\n For example, swap the first character with the last character of \`s2\` to make \`"bank"\`.\n\n---\n\n### Example 2:\n\n **Input:**\n\n \`s1 = "attack", s2 = "defend"\`\n\n **Output:**\n\n \`false\`\n\n**Explanation:**\n\n It is impossible to make them equal with one string swap.\n\n---\n\n### Example 3:\n\n **Input:**\n\n \`s1 = "kelb", s2 = "kelb"\`\n\n **Output:**\n\n \`true\` \n\n**Explanation:**\n\n The two strings are already equal, so no string swap operation is required.\n\n---\n\n## Constraints:\n\n- \`1 <= s1.length, s2.length <= 100\`\n\n- \`s1.length == s2.length\`\n\n- \`s1\` and \`s2\` consist of only lowercase English letters.`,
       "hints": [
-        "Consider keeping a frequency array that stores the count of occurrences of each number till index i.",
+        `\`\`\`python
+        from collections import Counter
+        def areAlmostEqual(s1: str, s2: str) -> bool:
+            return s1 == s2 or Counter(s1) == Counter(s2)
+        \`\`\``,
         "If a number occurred two times, it means it occurred in both A and B since they’re both permutations so add one to the answer."
       ],
       "relatedProblems": [

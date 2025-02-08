@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import ModeToggle from '../ModeToggle';
 import { useTabs } from '@/context/tabs-context';
 import Results from '../Tabs/Results';
+import { FlaskConical } from 'lucide-react';
 
 export default function ActionButtons() {
   const { state, addTab } = useTabs()
@@ -12,6 +13,7 @@ export default function ActionButtons() {
       id: `new-tab-${state.tabs.length + 1}`,
       name: "Results",
       isHidden: false,
+      icon: <FlaskConical />,
       isActive: true,
       isClosable: true,
       content: <Results />,

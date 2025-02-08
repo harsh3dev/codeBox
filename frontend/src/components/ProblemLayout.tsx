@@ -119,15 +119,24 @@ export default function ProblemLayout({
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="prose dark:prose-invert max-w-none bg-accent/10 p-4 rounded-md mt-2">
-                    <Markdown>
-                      {
-                        hints.map((hint, index) => (
-                          `## Hint ${index + 1}\n${hint}\n`
-                        )).join('\n')
-                      }
-                      </Markdown>
-                  </div>
+              <div className="prose dark:prose-invert max-w-none bg-accent/10 p-4 rounded-md mt-2">
+                {
+                  hints.map((hint, index) => {
+                    const heading = `## Hint ${index + 1}`
+                    const content = hint
+                    return (
+                      <>
+                        <Markdown>
+                          {heading}
+                        </Markdown>
+                        <Markdown>
+                          {content}
+                        </Markdown>
+                      </>
+                    )
+                  }).join('\n')
+                }
+              </div>
                 </CollapsibleContent>
               </Collapsible>
 
