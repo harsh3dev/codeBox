@@ -7,7 +7,7 @@ from langchain_core.prompts import (
 from langchain_core.messages import SystemMessage
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
-from prompt import base_interviewer, dsa_prompt
+from .prompt import base_interviewer, dsa_prompt
 
 def generate_ai_message(
     username=None, 
@@ -21,14 +21,12 @@ def generate_ai_message(
             Candidate_name=username,
             Problem_description=question_description
         )
-
-        formatted_base_prompt = base_interviewer.replace("<You message here>", f"You are conducting an interview with {username}.")
-        final_prompt = formatted_base_prompt + "\n" + formatted_dsa_prompt + "\n" + chat_history if chat_history else formatted_base_prompt + "\n" + formatted_dsa_prompt
+        formatted_base_prompt = base_interviewer
+        final_prompt = formatted_base_prompt + "\n" + formatted_dsa_prompt + "\n" + chat_history if chat_history else ""
     else:
         base_prompt = "You are continuing an interview. Refer to the conversation so far and AI notes:"
         final_prompt = f"{base_prompt}\nChat History:\n{chat_history}\nAI Notes:\n{ai_notes}"
 
-    # Set up the memory for conversation
     conversational_memory_length = 5 
     memory = ConversationBufferWindowMemory(k=conversational_memory_length, memory_key="chat_history", return_messages=True)
 

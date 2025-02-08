@@ -4,14 +4,16 @@ services:
   backend:
     build:
       context: ./backend
-    command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
       - /var/run/docker.sock:/var/run/docker.sock 
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
     depends_on:
       - db
+    command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
 
   frontend:
     build:
