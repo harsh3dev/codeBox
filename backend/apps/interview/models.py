@@ -13,6 +13,7 @@ class InterviewSession(models.Model):
     is_completed = models.BooleanField(default=False)
     chat_history = models.JSONField(blank=True, default=list)
     ai_notes = models.TextField(blank=True, default="")
+    initial_prompt_sent = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-start_time']
@@ -26,7 +27,7 @@ class InterviewSession(models.Model):
         self.end_time = timezone.now()
         self.save()
 
-    def add_to_history(self, message: str, is_ai: bool = False):
+    def add_to_history(self, message_list: list):
         """Add a new message to the chat history as a JSON object."""
-        self.chat_history.append({"is_ai": is_ai, "message": message})
+        self.chat_history.extend(message_list)
         self.save()

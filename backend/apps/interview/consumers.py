@@ -23,19 +23,24 @@ class InterviewConsumer(AsyncWebsocketConsumer):
             self.question = await sync_to_async(lambda: self.interview.question)()
             self.question_description = await sync_to_async(lambda: self.question.description)()
             
-            self.chat_history = ""  
+            self.chat_history = "" 
+            self.message_list = []
             self.ai_notes = ""  
-            self.initial_prompt_sent = False  
+            self.initial_prompt_sent = self.interview.initial_prompt_sent
+            logger.info(f"initial_prompt_sent: {self.initial_prompt_sent}")
             
             # Store user information and question description in WebSocket session
             self.scope['username'] = self.user_full_name
             self.scope['question_description'] = self.question_description
             
-            logger.info(f"connected to interview {self}")
+            logger.info(f"connected to interview {self.interview_id}")
             await self.accept()
 
-            # Send the first welcome message and question
-            await self.send_initial_message()
+            # Fetch chat history from the database if initial_prompt_sent is False
+            if not self.initial_prompt_sent:
+                await self.send_initial_message()
+            else:
+                await self.fetch_chat_history()
             
         except InterviewSession.DoesNotExist:
             logger.error(f"Interview {self.interview_id} not found.")
@@ -43,15 +48,21 @@ class InterviewConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         logger.info(f"WebSocket connection closed with code {close_code}.")
+        await sync_to_async(self.interview.add_to_history)(self.message_list)
+        await sync_to_async(self.interview.save)()
 
     async def send_initial_message(self):
         username = self.scope['username']
         welcome_message = f"Welcome to the interview, {username}. " \
                          f"The question is: '{self.question.title}'. Can you explain your approach?"
+        self.chat_history += f"\nAI: {welcome_message}"
+        self.message_list.append({"is_ai": True, "message": welcome_message})
         await self.send(text_data=json.dumps({
             'type': 'ai_message',
             'message': welcome_message,
         }))
+        self.initial_prompt_sent = True
+        await sync_to_async(self.update_initial_prompt_sent)()
 
     async def receive(self, text_data):
         try:
@@ -60,6 +71,7 @@ class InterviewConsumer(AsyncWebsocketConsumer):
                 candidate_response = data['answer']
                 logger.info(f"Candidate's response: {candidate_response}")
                 self.chat_history += f"\nCandidate: {candidate_response}"
+                self.message_list.append({"is_ai": False, "message": candidate_response})
                 
                 # Handle first message to AI with username and question description
                 if not self.initial_prompt_sent:
@@ -74,6 +86,7 @@ class InterviewConsumer(AsyncWebsocketConsumer):
                         is_initial=True
                     )
                     self.initial_prompt_sent = True
+                    await sync_to_async(self.update_initial_prompt_sent)()
                 else:
                     # For subsequent messages, send chat history and AI notes
                     ai_message, self.ai_notes = await sync_to_async(generate_ai_message)(
@@ -81,19 +94,25 @@ class InterviewConsumer(AsyncWebsocketConsumer):
                         ai_notes=self.ai_notes,
                         is_initial=False
                     )
-
-                # Send the AI-generated follow-up message to the candidate
+                
+                self.chat_history += f"\nAI: {ai_message}"
+                self.message_list.append({"is_ai": True, "message": ai_message})
                 await self.send(text_data=json.dumps({
                     'type': 'ai_message',
                     'message': ai_message,
-                }))
-            else:
-                await self.send(text_data=json.dumps({
-                    'type': 'error',
-                    'message': 'Invalid message format. Expected an answer.',
                 }))
         except json.JSONDecodeError:
             await self.send(text_data=json.dumps({
                 'type': 'error',
                 'message': 'Invalid JSON format.',
             }))
+
+    async def fetch_chat_history(self):
+        self.message_list = await sync_to_async(lambda: self.interview.chat_history)()
+        self.chat_history = "\n".join(
+            f"{'AI' if msg['is_ai'] else 'Candidate'}: {msg['message']}" for msg in self.message_list
+        )
+
+    def update_initial_prompt_sent(self):
+        self.interview.initial_prompt_sent = self.initial_prompt_sent
+        self.interview.save()

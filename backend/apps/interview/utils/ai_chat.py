@@ -24,10 +24,10 @@ def generate_ai_message(
         formatted_base_prompt = base_interviewer
         final_prompt = formatted_base_prompt + "\n" + formatted_dsa_prompt + "\n" + chat_history if chat_history else ""
     else:
-        base_prompt = "You are continuing an interview. Refer to the conversation so far and AI notes:"
-        final_prompt = f"{base_prompt}\nChat History:\n{chat_history}\nAI Notes:\n{ai_notes}"
+        formatted_dsa_prompt = "You are continuing an interview. Refer to the conversation so far and AI notes:"
+        final_prompt = f"{formatted_dsa_prompt}\nChat History:\n{chat_history}\nAI Notes:\n{ai_notes}"
 
-    conversational_memory_length = 5 
+    conversational_memory_length = 20 
     memory = ConversationBufferWindowMemory(k=conversational_memory_length, memory_key="chat_history", return_messages=True)
 
     llm = ChatGoogleGenerativeAI(
@@ -36,6 +36,7 @@ def generate_ai_message(
         max_tokens=None,
         timeout=None,
         max_retries=2,
+        api_key="AIzaSyCQTJQOn6aFQjf_eeo_97ttvyw1IoSj1zY",
     )
 
     prompt = ChatPromptTemplate.from_messages(

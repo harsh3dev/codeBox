@@ -4,46 +4,82 @@ import { MessageBubble } from "./MessageBubble";
 import { Message } from "./types";
 import ActionButtons from "@/components/Testcases/ActionButtons";
 
-export default function RightPanel() {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-          id: '1',
-          content: "Hello! I'm your interviewer today. Before we begin please introduce yourself!",
-          sender: 'ai',
-          timestamp: new Date()
-        }
-      ]);
+export default function RightPanel({interview_id}: {interview_id: string}) {
+    const [messages, setMessages] = useState<Message[]>([]);
       const [isLoading, setIsLoading] = useState(false);
       const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
       const chatEndRef = useRef<HTMLDivElement>(null);
       const synth = window.speechSynthesis;
+      const ws = useRef<WebSocket | null>(null);
     
       useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
+
+      const handleAIMessage = (event: MessageEvent) => {
+        setIsLoading(false);
+        const content = JSON.parse(event.data).message;
+        const aiMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: content,
+            sender: 'ai',
+            timestamp: new Date()
+        };
+        console.log(event);
+        setMessages(prev => {
+            const updatedMessages = [...prev, aiMessage];
+            localStorage.setItem(`messages_${interview_id}`, JSON.stringify(updatedMessages));
+            return updatedMessages;
+        });
+    };
+
+      useEffect(() => {
+        const savedMessages = localStorage.getItem(`messages_${interview_id}`);
+        if (savedMessages) {
+            setMessages(JSON.parse(savedMessages));
+            ws.current = new WebSocket(`ws://localhost:8000/ws/interview/${interview_id}/`);
+            ws.current.onopen = () => console.log('WebSocket connection established');
+            ws.current.onmessage = handleAIMessage;
+            ws.current.onclose = () => console.log('WebSocket connection closed');
+            ws.current.onerror = (error) => console.error('WebSocket error:', error);
+        } else {
+            ws.current = new WebSocket(`ws://localhost:8000/ws/interview/${interview_id}/`);
+            ws.current.onopen = () => console.log('WebSocket connection established');
+            ws.current.onmessage = handleAIMessage;
+            ws.current.onclose = () => console.log('WebSocket connection closed');
+            ws.current.onerror = (error) => console.error('WebSocket error:', error);
+
+            return () => {
+                ws.current?.close();
+            };
+        }
+    }, [interview_id]);
+
+
+      const sendMessageViaWebSocket = (userMessage: string) => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({"answer": userMessage}));
+        } else {
+          console.error('WebSocket is not open');
+        }
+      };
     
       const handleMessageInput = async (userMessage: string) => {
         setIsLoading(true);
         const newMessage: Message = {
-          id: Date.now().toString(),
-          content: userMessage,
-          sender: 'user',
-          timestamp: new Date()
+            id: Date.now().toString(),
+            content: userMessage,
+            sender: 'user',
+            timestamp: new Date()
         };
-        setMessages(prev => [...prev, newMessage]);
-    
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    
-        const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          content: "That's a great approach! Let's break down the problem further...",
-          sender: 'ai',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        setIsLoading(false);
-      };
+        setMessages(prev => {
+            const updatedMessages = [...prev, newMessage];
+            localStorage.setItem(`messages_${interview_id}`, JSON.stringify(updatedMessages));
+            return updatedMessages;
+        });
+
+        sendMessageViaWebSocket(userMessage);
+    };
     
       const handlePlayToggle = (messageId: string, content: string) => {
         if (playingMessageId === messageId) {
