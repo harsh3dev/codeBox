@@ -9,6 +9,7 @@ services:
     volumes:
       - ./backend:/app
       - /var/run/docker.sock:/var/run/docker.sock 
+    env_file: backend/.env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
       LANGSMITH_TRACING: true

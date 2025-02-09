@@ -8,6 +8,9 @@ from langchain_core.messages import SystemMessage
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
 from .prompt import base_interviewer, dsa_prompt
+import os
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def generate_ai_message(
     username=None, 
@@ -36,7 +39,7 @@ def generate_ai_message(
         max_tokens=None,
         timeout=None,
         max_retries=2,
-        api_key="AIzaSyCw-qpo3MhebMhZsatK4vNfbKoDvACoELM",
+        api_key=GEMINI_API_KEY,
     )
 
     prompt = ChatPromptTemplate.from_messages(
