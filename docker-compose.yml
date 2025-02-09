@@ -18,12 +18,18 @@ services:
     depends_on:
       - db
     command: >
-      sh -c "python manage.py makemigrations && python manage.py migrate && daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+         sh -c "python manage.py makemigrations && 
+         python manage.py migrate && 
+         watchfiles --filter python 'daphne -b 0.0.0.0 -p 8000 config.asgi:application'"
 
   frontend:
     build:
       context: ./frontend
-    command: npm run dev -- --host
+    command: >
+      sh -c "
+        npm install &&
+        npm run dev
+      "
     ports:
       - "3000:3000"
     volumes:

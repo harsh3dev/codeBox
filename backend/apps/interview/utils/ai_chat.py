@@ -36,7 +36,7 @@ def generate_ai_message(
         max_tokens=None,
         timeout=None,
         max_retries=2,
-        api_key="AIzaSyCQTJQOn6aFQjf_eeo_97ttvyw1IoSj1zY",
+        api_key="AIzaSyCw-qpo3MhebMhZsatK4vNfbKoDvACoELM",
     )
 
     prompt = ChatPromptTemplate.from_messages(
