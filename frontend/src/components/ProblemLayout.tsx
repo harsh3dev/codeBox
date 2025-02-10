@@ -27,6 +27,7 @@ interface ProblemProps {
   acceptanceRate: number
   initialLikes?: number
   initialDislikes?: number
+  strictMode?: boolean
 }
 
 export default function ProblemLayout({
@@ -43,7 +44,8 @@ export default function ProblemLayout({
   ],
   acceptanceRate = 47.5,
   initialLikes = 123,
-  initialDislikes = 45
+  initialDislikes = 45,
+  strictMode = false
 }: ProblemProps) {
   const [likes, setLikes] = useState(initialLikes)
   const [dislikes, setDislikes] = useState(initialDislikes)
@@ -72,13 +74,14 @@ export default function ProblemLayout({
   }
 
   return (
-    <Card className="bg-transparent border-none">
+    <Card className="bg-transparent border-none" style={{ userSelect: strictMode ? 'none' : 'auto' }}>
       <CardHeader className="space-y-4 bg-secondary/10">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold">{title}</h1>
             <div>
-              <div className="flex items-center gap-2">
+              { !strictMode &&(
+                <div className="flex items-center gap-2">
                 <Badge
                   variant="default"
                   className={cn(difficulty === 'Medium' ? 'text-yellow-500' : difficulty === 'Easy' ? 'text-green-500' : 'text-red-500', 'bg-primary/10 border border-primary/10')}
@@ -90,7 +93,8 @@ export default function ProblemLayout({
                     {label}
                   </Badge>
                 ))}
-              </div>
+              </div>)
+              }
               <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-2 py-1 rounded-md">
                   <Brain className="h-4 w-4 text-primary" />
@@ -115,7 +119,8 @@ export default function ProblemLayout({
           </div>
         </div>
 
-        <Collapsible open={isHintsOpen} onOpenChange={setIsHintsOpen}>
+        { !strictMode && hints.length > 0 &&
+          <Collapsible open={isHintsOpen} onOpenChange={setIsHintsOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="flex w-full justify-between">
               <h2 className="text-2xl font-semibold text-primary">Hints</h2>
@@ -143,8 +148,10 @@ export default function ProblemLayout({
             </div>
           </CollapsibleContent>
         </Collapsible>
+        }
 
-        <Collapsible open={isRelatedProblemsOpen} onOpenChange={setIsRelatedProblemsOpen}>
+        { !strictMode && relatedProblems.length > 0 &&
+          <Collapsible open={isRelatedProblemsOpen} onOpenChange={setIsRelatedProblemsOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="flex w-full justify-between">
               <h2 className="text-2xl font-semibold text-primary">Related Problems</h2>
@@ -165,6 +172,7 @@ export default function ProblemLayout({
             </div>
           </CollapsibleContent>
         </Collapsible>
+        }
         <Separator className="bg-primary/30" />
         <BottomBar
           likes={likes}

@@ -28,13 +28,13 @@ function ModeToggle({ className }: { className?: string }) {
   }
 
   return (
-    <div className={cn('flex items-center justify-center hover:bg-gray-900/30 dark:hover:bg-gray-200/30 p-2 rounded-full', className)}>
-      <button onClick={darkModeHandler} className="text-sm font-medium text-gray-900 dark:text-gray-100">
+    <button onClick={darkModeHandler} className={cn('flex items-center justify-center hover:bg-gray-900/30 dark:hover:bg-gray-200/30 p-2 rounded-full', className)}>
+      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
         {
           dark ? <MoonIcon size={16} /> : <Sun size={16} />
         }
-      </button>
-    </div>
+      </div>
+    </button>
   )
 }
 

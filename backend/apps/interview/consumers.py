@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import InterviewSession
 from apps.problems.models import Problem
+from .utils.prompt import base_interviewer, dsa_prompt
 from .utils.ai_chat import generate_ai_message  
 import logging
 
@@ -23,7 +24,10 @@ class InterviewConsumer(AsyncWebsocketConsumer):
             self.question = await sync_to_async(lambda: self.interview.question)()
             self.question_description = await sync_to_async(lambda: self.question.description)()
             
-            self.chat_history = "" 
+            self.chat_history = dsa_prompt.format(
+            Candidate_name=self.user_full_name,
+            Problem_description=self.question_description
+            ) + base_interviewer 
             self.message_list = []
             self.ai_notes = ""  
             self.initial_prompt_sent = self.interview.initial_prompt_sent
@@ -109,7 +113,10 @@ class InterviewConsumer(AsyncWebsocketConsumer):
 
     async def fetch_chat_history(self):
         self.message_list = await sync_to_async(lambda: self.interview.chat_history)()
-        self.chat_history = "\n".join(
+        self.chat_history = dsa_prompt.format(
+            Candidate_name=self.user_full_name,
+            Problem_description=self.question_description
+            ) + base_interviewer + "\n".join(
             f"{'AI' if msg['is_ai'] else 'Candidate'}: {msg['message']}" for msg in self.message_list
         )
 

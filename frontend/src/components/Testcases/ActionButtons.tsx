@@ -1,10 +1,9 @@
 import { Button } from '@/components/ui/button';
-import ModeToggle from '../ModeToggle';
 import { useTabs } from '@/context/tabs-context';
 import Results from '../Tabs/Results';
 import { FlaskConical } from 'lucide-react';
 
-export default function ActionButtons() {
+export default function ActionButtons({className}: {className?: string}) {
   const { state, addTab } = useTabs()
 
 
@@ -25,12 +24,11 @@ export default function ActionButtons() {
   }
 
   return (
-    <div className="flex justify-center gap-2 p-4 bg-background">
-      <ModeToggle />
-      <Button variant="secondary" className="mr-2">
+    <div className={"flex justify-center gap-2 py-4 pr-8" + (className ? ` ${className}` : "")}>
+      <Button variant="outline" className="mr-2 shadow-lg">
         Run
       </Button>
-      <Button onClick={handleSubmit}>Submit</Button>
+      <Button onClick={handleSubmit} className='shadow-lg'>Submit</Button>
     </div>
   );
 }

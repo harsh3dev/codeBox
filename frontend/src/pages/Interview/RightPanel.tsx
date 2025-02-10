@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble } from "./MessageBubble";
 import { Message } from "./types";
-import ActionButtons from "@/components/Testcases/ActionButtons";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 export default function RightPanel({interview_id}: {interview_id: string}) {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -94,9 +94,8 @@ export default function RightPanel({interview_id}: {interview_id: string}) {
         }
       };
   return (
-      <div className="flex flex-col w-full h-full min-h-screen bg-white dark:bg-neutral-900 rounded-lg shadow">
-        <ActionButtons />
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      <ScrollArea className="flex flex-col w-full h-full min-h-screen bg-white dark:bg-neutral-900 rounded-lg shadow">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pt-8">
               {messages.map(message => (
                   <MessageBubble
                       key={message.id}
@@ -123,6 +122,6 @@ export default function RightPanel({interview_id}: {interview_id: string}) {
           <div className="mt-4">
               <ChatInput onSendMessage={handleMessageInput} isLoading={isLoading} />
           </div>
-      </div>
+      </ScrollArea>
   )
 }

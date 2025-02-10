@@ -22,6 +22,13 @@ export default function Description() {
   // const { state, dispatch } = useEditorMode();
   const [problem, setProblem] = useState<problemSet | null>(null);
 
+  const [strictMode, setStrictMode] = useState(false);
+
+  useEffect(() => {
+    const isStrictMode = localStorage.getItem("strictMode") === "true";
+    setStrictMode(isStrictMode);
+  }, [strictMode]);
+
   useEffect(() => {
     const problemset = {
       "title": "Find the Prefix Common Array of Two Arrays",
@@ -67,6 +74,7 @@ export default function Description() {
           acceptanceRate={problem.acceptanceRate}
           initialLikes={problem.initialLikes}
           initialDislikes={problem.initialDislikes}
+          strictMode={strictMode}
         />
       )}
     </ScrollArea>
