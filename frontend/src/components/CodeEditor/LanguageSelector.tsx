@@ -101,6 +101,7 @@ export default function LanguageSelector({ languages, currentLanguage, setCurren
                             aria-selected={currentLanguage.name === language.name}
                             onClick={() => {
                                 setCurrentLanguage(language);
+                                localStorage.setItem("language",language.symbol.toLowerCase())
                                 setIsSelectOpen(false);
                             }}
                             onFocus={() => setFocusedIndex(index)}

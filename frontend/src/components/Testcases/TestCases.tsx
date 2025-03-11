@@ -1,42 +1,58 @@
-import { useTabs } from "@/context/tabs-context";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Tabs/Tabs";
-import { cn } from "@/lib/utils";
-import { testCaseTabs } from "../Tabs/constants";
+import { useState } from "react";
+import { Textarea } from "../ui/textarea";
+import ActionButtons from "./ActionButtons";
+import { TestCase } from "@/pages/Interview/types";
 
-export default function TestCases() {
-    const { visibleTabs, removeTab, activateTab, hideTab } = useTabs(testCaseTabs)
+export default function TestCases({
+  className,
+  defaultTestCases = [], // Provide a default value if not passed
+  onRun,
+  submitState,
+  setSubmitState,
+}: {
+  className?: string;
+  defaultTestCases: TestCase[];
+  onRun: (testCases: TestCase[]) => void;
+  submitState: "initial" | "loading" | "success";
+  setSubmitState: React.Dispatch<React.SetStateAction<"initial" | "loading" | "success">>;
+}) {
+  const [testCases, setTestCases] = useState<TestCase[]>(defaultTestCases);
+  const [submittedCases, setSubmittedCases] = useState<TestCase[]>();
+  const [showSubmitted, setShowSubmitted] = useState(false);
+
+  const updateTestCase = (value: any) => {
+    setTestCases(value);
+  };
+
+  const handleSubmit = () => {
+    setSubmittedCases(testCases);
+    setShowSubmitted(true);
+    onRun(testCases);
+  };
 
   return (
-    <div className="h-full min-h-[20px] p-4 rounded-lg">
-      {/* <Tabs
-        value={visibleTabs.find(tab => tab.isActive)?.id || visibleTabs[0]?.id}
-        onValueChange={activateTab}
-        className="flex-1 w-full h-full"
-      >
-        <TabsList className="bg-transparent">
-          {visibleTabs.map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              icon={tab.icon && <tab.icon className="w-4 h-4" />}
-              isClosable={tab.isClosable}
-              onClose={() => hideTab(tab.id)}
-              className={cn(
-                "data-[state=active]:border-b data-[state=active]:border-blue-500",
-                "data-[state=inactive]:text-muted-foreground",
-                "transition-colors duration-150"
-              )}
-            >
-              {tab.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {visibleTabs.map((tab) => (
-          <TabsContent key={tab.id} value={tab.id} className="w-full h-full">
-            {tab.content}
-          </TabsContent>
-        ))}
-      </Tabs> */}
+    <div className="min-h-screen p-4 overflow-auto">
+      <h1 className="text-xl font-bold mb-4">Test Cases</h1>
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center space-x-2 mb-4">
+          <Textarea
+            id="input-n"
+            value={defaultTestCases
+              ? defaultTestCases.map((testCase: TestCase) => testCase.input_data).join("\n")
+              : ""} // Ensure defaultTestCases is an array before calling map()
+            onChange={(e) => {
+              const newTestCases = e.target.value.split("\n").map((inputData: string, index: number) => ({
+                ...testCases[index],
+                input_data: inputData.trim(),
+              }));
+              updateTestCase(newTestCases);
+            }}
+            className="border-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 scrollbar-hidden"
+            placeholder="Enter test case value"
+          />
+        </div>
+      </div>
+      <ActionButtons submitState={submitState} className="absolute bottom-0 right-0" onRun={handleSubmit} setSubmitState={setSubmitState} />
     </div>
   );
 }

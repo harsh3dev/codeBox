@@ -6,7 +6,6 @@ interface BottomBarProps {
   likes: number
   dislikes: number
   userVote: 'like' | 'dislike' | null
-  acceptanceRate: number
   onVote: (type: 'like' | 'dislike') => void
 }
 
@@ -14,7 +13,6 @@ export function BottomBar({
   likes,
   dislikes,
   userVote,
-  acceptanceRate,
   onVote
 }: BottomBarProps) {
   return (
@@ -44,12 +42,6 @@ export function BottomBar({
               <MessageSquare className="h-4 w-4 mr-1" />
               Discussion
             </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Acceptance Rate</span>
-            <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              {acceptanceRate}%
-            </Badge>
           </div>
         </div>
       </div>

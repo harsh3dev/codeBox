@@ -16,42 +16,49 @@ import { BottomBar } from './BottomBar'
 import { cn } from '@/lib/utils'
 
 interface ProblemProps {
-  title: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
-  labels: string[]
-  timeLimit: string
-  memoryLimit: string
-  description: string
-  hints: string[]
-  relatedProblems: Array<{ title: string, a: string }>
-  acceptanceRate: number
-  initialLikes?: number
-  initialDislikes?: number
-  strictMode?: boolean
+  title: string;
+  difficulty: "E" | "M" | "H";
+  topicTags: string[];
+  time_limit: string;
+  memory_limit: string;
+  description: string;
+  hints: string[];
+  related_problems: {
+    title: string;
+    a: string;
+  }[];
+  initialLikes: number;
+  initialDislikes: number;
+  strictMode?: boolean;
+}
+
+const difficultySet = {
+  E: 'Easy',
+  M: 'Medium',
+  H: 'Hard'
 }
 
 export default function ProblemLayout({
   title = "Two Sum",
-  difficulty = "Medium",
-  labels = ["Array", "Hash Table"],
-  timeLimit = "1s",
-  memoryLimit = "256MB",
+  difficulty = "M",
+  topicTags = ["Array", "Hash Table"],
+  time_limit = "1s",
+  memory_limit = "256MB",
   description = "Given an array of integers...",
   hints = ["Try using a hash map...", "What is the best way to find a pair of numbers that sum up to a target?"],
-  relatedProblems = [
+  related_problems = [
     { title: "Three Sum", a: "/problems/three-sum" },
     { title: "Four Sum", a: "/problems/four-sum" }
   ],
-  acceptanceRate = 47.5,
   initialLikes = 123,
   initialDislikes = 45,
-  strictMode = false
+  strictMode = true
 }: ProblemProps) {
   const [likes, setLikes] = useState(initialLikes)
   const [dislikes, setDislikes] = useState(initialDislikes)
   const [userVote, setUserVote] = useState<'like' | 'dislike' | null>(null)
   const [isHintsOpen, setIsHintsOpen] = useState(false)
-  const [isRelatedProblemsOpen, setIsRelatedProblemsOpen] = useState(false)
+  const [isrelated_problemsOpen, setIsrelated_problemsOpen] = useState(false)
 
   const handleVote = (type: 'like' | 'dislike') => {
     if (userVote === type) {
@@ -74,21 +81,21 @@ export default function ProblemLayout({
   }
 
   return (
-    <Card className="bg-transparent border-none" style={{ userSelect: strictMode ? 'none' : 'auto' }}>
-      <CardHeader className="space-y-4 bg-secondary/10">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold">{title}</h1>
-            <div>
+    <Card className="bg-transparent border-none flex flex-wrap w-full" style={{ userSelect: strictMode ? 'none' : 'auto' }}>
+      <CardHeader className="space-y-4 bg-secondary/10 w-full">
+        <div className="flex items-center justify-between w-full">
+          <div className="space-y-2 w-full">
+            <h1 className="text-3xl font-bold text-wrap flex flex-wrap">{title}</h1>
+            <div className='w-full flex items-center gap-2 justify-between'>
               { !strictMode &&(
                 <div className="flex items-center gap-2">
                 <Badge
                   variant="default"
-                  className={cn(difficulty === 'Medium' ? 'text-yellow-500' : difficulty === 'Easy' ? 'text-green-500' : 'text-red-500', 'bg-primary/10 border border-primary/10')}
+                  className={cn(difficulty === 'M' ? 'text-yellow-500' : difficulty === 'E' ? 'text-green-500' : 'text-red-500', 'bg-primary/10 border border-primary/10')}
                 >
-                  {difficulty}
+                  {difficultySet[difficulty]}
                 </Badge>
-                {labels.map((label) => (
+                {topicTags.map((label) => (
                   <Badge key={label} variant="outline" className="bg-primary/10 text-primary border-primary/20">
                     {label}
                   </Badge>
@@ -98,10 +105,10 @@ export default function ProblemLayout({
               <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-2 py-1 rounded-md">
                   <Brain className="h-4 w-4 text-primary" />
-                  {memoryLimit}
+                  {memory_limit}
                   <Separator orientation="vertical" className="h-4" />
                   <Timer className="h-4 w-4 text-primary" />
-                  {timeLimit}
+                  {time_limit}
                 </div>
               </div>
             </div>
@@ -111,7 +118,7 @@ export default function ProblemLayout({
 
       </CardHeader>
 
-      <CardContent className="space-y-6 pt-6">
+      <CardContent className="space-y-6 pt-6 mb-10">
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-primary">Description</h2>
           <div className="prose dark:prose-invert max-w-none">
@@ -131,37 +138,31 @@ export default function ProblemLayout({
             <div className="prose dark:prose-invert max-w-none bg-accent/10 p-4 rounded-md mt-2">
               {
                 hints.map((hint, index) => {
-                  const heading = `## Hint ${index + 1}`
                   const content = hint
                   return (
-                    <>
-                      <Markdown>
-                        {heading}
-                      </Markdown>
-                      <Markdown>
+                      <span key={index}>
                         {content}
-                      </Markdown>
-                    </>
+                      </span>
                   )
-                }).join('\n')
+                })
               }
             </div>
           </CollapsibleContent>
         </Collapsible>
         }
 
-        { !strictMode && relatedProblems.length > 0 &&
-          <Collapsible open={isRelatedProblemsOpen} onOpenChange={setIsRelatedProblemsOpen}>
+        { !strictMode && related_problems.length > 0 &&
+          <Collapsible open={isrelated_problemsOpen} onOpenChange={setIsrelated_problemsOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="flex w-full justify-between">
               <h2 className="text-2xl font-semibold text-primary">Related Problems</h2>
-              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isRelatedProblemsOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isrelated_problemsOpen ? 'rotate-180' : ''}`} />
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
             <div className="prose dark:prose-invert max-w-none mt-2">
               <ul>
-                {relatedProblems.map((problem, index) => (
+                {related_problems.map((problem, index) => (
                   <li key={index}>
                     <a href={problem.a} className="text-primary hover:underline">
                       {problem.title}
@@ -173,14 +174,13 @@ export default function ProblemLayout({
           </CollapsibleContent>
         </Collapsible>
         }
-        <Separator className="bg-primary/30" />
-        <BottomBar
+        {/* <Separator className="bg-primary/30" /> */}
+        {/* <BottomBar
           likes={likes}
           dislikes={dislikes}
           userVote={userVote}
-          acceptanceRate={acceptanceRate}
           onVote={handleVote}
-        />
+        /> */}
       </CardContent>
     </Card>
   )

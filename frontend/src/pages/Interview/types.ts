@@ -15,3 +15,13 @@ export interface Problem {
     explanation?: string;
   }>;
 }
+
+export interface TestCase {
+  id: number;
+  problem: number; 
+  input_data: string; 
+  expected_output: string; 
+  is_sample: boolean; 
+  explanation: string; 
+  order: number;
+}

@@ -25,27 +25,27 @@
     --radius: 0.5rem;
   }
   .dark {
-    --background: 195 34% 5%;
+    --background: 195 20% 5%;
     --foreground: 195 5% 90%;
-    --card: 195 34% 2%;
+    --card: 195 20% 0%;
     --card-foreground: 195 5% 90%;
-    --popover: 195 34% 5%;
+    --popover: 195 20% 5%;
     --popover-foreground: 195 5% 90%;
-    --primary: 195 68% 37%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 195 30% 10%;
+    --primary: 195 87% 67%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 195 20% 10%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 157 30% 15%;
+    --muted: 157 20% 15%;
     --muted-foreground: 195 5% 60%;
-    --accent: 157 30% 15%;
+    --accent: 157 20% 15%;
     --accent-foreground: 195 5% 90%;
     --destructive: 0 50% 30%;
     --destructive-foreground: 195 5% 90%;
-    --border: 195 30% 18%;
-    --input: 195 30% 18%;
-    --ring: 195 68% 37%;
+    --border: 195 20% 18%;
+    --input: 195 20% 18%;
+    --ring: 195 87% 67%;
     --radius: 0.5rem;
-  }
+   }
 }
 @layer base {
   * {
@@ -76,4 +76,62 @@
 .code-copy-btn:hover {
   transform: scale(1.1);
   opacity: 0.9;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.separator:not(:empty)::before {
+  margin-right: 0.75em;
+}
+
+.separator:not(:empty)::after {
+  margin-left: 0.75em;
+}
+
+.wmde-markdown pre {
+  text-wrap: wrap;
+  background-color: var(--secondary) !important;
+}
+
+.wmde-markdown pre > code {
+  background-color: var(--primary) !important;
+  background: var(--primary) !important;
+  backdrop-filter: blur(20px);
+  border-radius: 0.5rem;
+}
+
+.wmde-markdown table tr:nth-child(2n){
+  background-color: var(--secondary) !important;
+}
+
+.wmde-markdown table tr{
+  background-color: var(--primary) !important;
 }

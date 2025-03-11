@@ -1,31 +1,68 @@
-#include <iostream>
-#include <vector>
-#include <unordered_map>
+#include <bits/stdc++.h>
 using namespace std;
 
-vector<int> two_sum(const vector<int>& nums, int target) {
-    unordered_map<int, int> num_map;
-    for (int i = 0; i < nums.size(); ++i) {
-        int complement = target - nums[i];
-        if (num_map.find(complement) != num_map.end()) {
-            return {num_map[complement], i};
+bool uniqueOccurrences(vector<int>& arr) {
+    // Sort the input array to group identical elements
+    sort(arr.begin(), arr.end());
+    vector<int> v;
+
+    for (int i = 0; i < arr.size(); i++) {
+        int cnt = 1;
+
+        // Count occurrences of the current element
+        while (i + 1 < arr.size() && arr[i] == arr[i + 1]) {
+            cnt++;
+            i++;
         }
-        num_map[nums[i]] = i;
+
+        // Push the count into the occurrences vector
+        v.push_back(cnt);
     }
-    return {}; // Return an empty vector if no solution
+
+    // Sort the occurrences vector
+    sort(v.begin(), v.end());
+
+    // Debugging: Print the occurrences after sorting
+    // cout << "Occurrences: ";
+    // for (int i = 0; i < v.size(); i++) {
+    //     cout << v[i] << " ";
+    // }
+    // cout << endl;
+
+    // Check for duplicate occurrences
+    for (int i = 1; i < v.size(); i++) {
+        if (v[i] == v[i - 1]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 int main() {
-    // Example usage
-    vector<int> nums = {2, 7, 11, 15};
-    int target = 9;
+    string input_data;
+    getline(cin, input_data);  // Read the entire line as input
 
-    vector<int> result = two_sum(nums, target);
+    vector<int> arr;
+    stringstream ss(input_data);
+    int num;
 
-    if (!result.empty()) {
-        cout << "Indices: [" << result[0] << ", " << result[1] << "]" << endl;
+    // Parse the input string and extract integers
+    while (ss >> num) {
+        arr.push_back(num);
+    }
+
+    // cout << "Input array: ";
+    // for (int i = 0; i < arr.size(); i++) {
+    //     cout << arr[i] << " ";
+    // }
+    // cout << endl;
+
+    // Call the function and print the result
+    if (uniqueOccurrences(arr)) {
+        cout << "true";
     } else {
-        cout << "No solution found" << endl;
+        cout << "false";
     }
 
     return 0;

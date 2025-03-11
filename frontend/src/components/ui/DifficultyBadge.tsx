@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Difficulty } from '@/pages/ProblemTable';
+import { Difficulty } from '@/pages/Problems/ProblemTable';
 import { useEffect, useState } from 'react';
 
 

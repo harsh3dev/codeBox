@@ -1,18 +1,16 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/resizable';
 import LeftPanel from './LeftPanel';
-import RightPanel from './RightPanel';
-// import ActionButtons from './Testcases/ActionButtons';
+import RightPanel from './CodePanel';
 import { TabsProvider } from '@/context/tabs-context';
 import { initialTabs } from './Tabs/constants';
 import { useParams } from 'react-router-dom';
 
 export default function LeetCodeLayout() {
-  const { id } = useParams<{ id: string }>();
-  console.log(id);
+  const { slug } = useParams<{ slug: string }>();
+  console.log(slug);
   return (
-    <TabsProvider initialTabs={initialTabs}>
+    <TabsProvider initialTabs={initialTabs} >
       <div className="h-screen w-full flex flex-col inset-0">
-        {/* <ActionButtons /> */}
         <ResizablePanelGroup direction="horizontal" className="flex-grow p-2">
           <ResizablePanel minSize={20} defaultSize={50}>
             <LeftPanel />

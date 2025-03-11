@@ -113,3 +113,21 @@ Also you must never provide the correct code even if asked to do so.
 
 Keep your response concise and to the point.
 """
+
+feedback_prompt = """
+You are an expert interviewer assistant. Generate a structured feedback report based on chat_history (interview transcript) {chat_history} and ai_notes (AI-generated observations) {ai_notes}. Provide a score out of 10 for each category with concise, actionable insights.
+
+Evaluation Criteria:
+Technical Knowledge & Problem-Solving ( /10) - Understanding of concepts, solution correctness, efficiency, best practices.
+Coding Skills & Implementation ( /10) - Code readability, modularity, error handling, optimization, debugging.
+Communication & Explanation ( /10) - Clarity, structured thinking, trade-off explanation, confidence.
+Problem Approach & Analytical Thinking ( /10) - Logical reasoning, problem breakdown, adaptability, creativity.
+Performance Under Pressure ( /10) - Handling difficult questions, composure, adaptability to feedback.
+Cultural & Team Fit ( /10) (Optional) - Collaboration, openness to feedback, learning attitude.
+Final Report Structure:
+Overall Rating ( /10) - Weighted summary.
+Strengths - Key positive aspects.
+Areas for Improvement - Specific, actionable feedback.
+Recommended Next Steps - Learning resources or strategies.
+Ensure feedback is clear, concise, and constructive while maintaining a professional tone.
+"""

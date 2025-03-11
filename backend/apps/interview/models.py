@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
 from apps.user.models import User
 from apps.problems.models import Problem
 
@@ -14,6 +15,7 @@ class InterviewSession(models.Model):
     chat_history = models.JSONField(blank=True, default=list)
     ai_notes = models.TextField(blank=True, default="")
     initial_prompt_sent = models.BooleanField(default=False)
+    feedback = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ['-start_time']
@@ -23,8 +25,8 @@ class InterviewSession(models.Model):
 
     def complete_interview(self):
         """Mark the interview as completed and set the end time."""
+        self.end_time = self.start_time + timedelta(minutes=45)
         self.is_completed = True
-        self.end_time = timezone.now()
         self.save()
 
     def add_to_history(self, message_list: list):

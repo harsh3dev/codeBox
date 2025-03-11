@@ -12,7 +12,9 @@ export function MessageBubble({ message, isPlaying, onPlayToggle }: MessageBubbl
   const isAI = message.sender === 'ai';
   
   return (
-    <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}>
+    <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}
+    style={{userSelect: 'none'}}
+    >
       <div className={`flex items-start max-w-[80%] ${isAI ? 'flex-row' : 'flex-row-reverse'}`}>
         <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center 
           ${isAI ? 'bg-purple-600' : 'bg-teal-600'} mr-2`}>
